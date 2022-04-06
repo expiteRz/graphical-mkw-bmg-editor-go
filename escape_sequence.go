@@ -1,12 +1,15 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"github.com/expiteRz/graphical-mkw-bmg-editor-go/utils"
+)
 
-func getCurrentPlayer() EscapeSeq {
+func getCurrentPlayer() utils.EscapeSeq {
 	return []byte{0, 0x1a, 0, 0x6, 0, 0x2, 0, 0, 0, 0}
 }
 
-func getFontSize(v ...byte) (EscapeSeq, error) {
+func getFontSize(v ...byte) (utils.EscapeSeq, error) {
 	base := []byte{0, 0x1a, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0}
 
 	if len(v) < 2 {
@@ -35,6 +38,6 @@ const (
 	transparent FontColor = 8
 )
 
-func getFontColor(v FontColor) EscapeSeq {
+func getFontColor(v FontColor) utils.EscapeSeq {
 	return []byte{0, 0x1a, 0, 8, 0, 0, 0, 0, 0, 1, 0, 0, interface{}(v).(uint8)}
 }
