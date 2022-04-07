@@ -12,6 +12,14 @@ const (
 	UTF8
 )
 
+var CharsetString = map[Charset]string{
+	Undefined: "Undefined",
+	CP1252:    "CP1252",
+	UTF16:     "UTF16",
+	ShiftJIS:  "ShiftJIS",
+	UTF8:      "UTF8",
+}
+
 type EscapeSeq []byte
 
 type Header struct {
