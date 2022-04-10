@@ -57,7 +57,7 @@ type MsgEntry struct {
 type StringPool struct {
 	Magic [4]byte // DAT1 in ASCII
 	Size  uint32
-	Pool  []rune
+	Pool  []uint16
 }
 
 type MsgId struct {
@@ -67,5 +67,5 @@ type MsgId struct {
 	Format   uint8
 	Info     uint8
 	Reserved int32    // Usually 0
-	Ids      []uint16 // Decode strings with `unicode/utf16.Decode()`
+	Ids      []uint32 // Decode strings with `unicode/utf16.Decode()`
 }
