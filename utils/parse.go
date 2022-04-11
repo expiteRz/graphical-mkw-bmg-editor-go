@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/expiteRz/graphical-mkw-bmg-editor-go/delve"
 	"os"
+	"unsafe"
 )
 
 var (
@@ -25,18 +27,45 @@ var (
 )
 
 func init() {
-	H = Header{}
-	I = IndexTable{MsgEntries: []MsgEntry{
-		{Offset: 2, FontType: 0x01},
-	}}
+	InitBmg()
+}
+
+func InitBmg() {
+	Filepath = ""
+
+	H = Header{
+		Magic:     [8]byte{0x4D, 0x45, 0x53, 0x47, 0x62, 0x6D, 0x67, 0x31}, // MESGbmg1
+		NumBlocks: 3,
+		Charset:   2,
+	}
+	I = IndexTable{
+		Kind:       [4]byte{0x49, 0x4E, 0x46, 0x31}, // INF1
+		Entries:    1,
+		EntrySize:  8,
+		Group:      0,
+		DefColor:   0,
+		Reserved:   0,
+		MsgEntries: []MsgEntry{{Offset: 2, FontType: 0x01}},
+	}
+	P = StringPool{
+		Magic: [4]byte{0x44, 0x41, 0x54, 0x31}, // DAT1
+		Pool:  nil,
+	}
 	M = MsgId{
 		Kind:    [4]byte{0x4d, 0x49, 0x44, 0x31},
-		Size:    16,
 		Entries: 1,
 		Format:  0x10,
 		Info:    0,
 		Ids:     []uint32{0},
 	}
+
+	I.Size = uint32(unsafe.Sizeof(I))
+	P.Size = uint32(unsafe.Sizeof(P))
+	M.Size = uint32(unsafe.Sizeof(M))
+	H.DataSize =
+		uint32(unsafe.Sizeof(H)) + I.Size + P.Size + M.Size
+
+	return
 }
 
 func ParseBmg() error {
@@ -79,6 +108,7 @@ func ParseBmg() error {
 
 	pool := make([]uint16, (P.Size-8)/2)
 	binary.Read(file, binary.BigEndian, &pool)
+	P.Pool = pool
 
 	// WIP: Parse MID1
 	binary.Read(file, binary.BigEndian, &M.Kind)
@@ -92,11 +122,118 @@ func ParseBmg() error {
 	binary.Read(file, binary.BigEndian, &ids)
 	M.Ids = ids
 
-	fmt.Println(M.Ids)
+	if delve.Enabled {
+		fmt.Println(M.Ids)
+	}
 
 	return nil
 }
 
-func lenText(p uint32, n uint32) uint {
-	return uint(n - p)
+// CombineBmg combines all structs and convert to byte array
+func CombineBmg() (bytes.Buffer, error) {
+	var (
+		buf = bytes.Buffer{}
+		err error
+	)
+
+	/// Check if any length dividable with 16
+	// If not, append data
+	var tmp bytes.Buffer // Initially define buffer
+
+	// Text Index Table.messageEntries
+	if err = binary.Write(&tmp, binary.BigEndian, I.MsgEntries); err != nil {
+		return bytes.Buffer{}, err
+	}
+	if len(tmp.Bytes())%16 != 0 {
+		I.MsgEntries = append(I.MsgEntries, *new(MsgEntry))
+	}
+
+	// String Pool
+	tmp = bytes.Buffer{}
+	if err = binary.Write(&tmp, binary.BigEndian, P.Pool); err != nil {
+		return bytes.Buffer{}, err
+	}
+	surp := len(tmp.Bytes()) % 16
+	if surp != 0 {
+		remind := surp / 2
+		P.Pool = append(P.Pool, make([]uint16, remind)...)
+	}
+
+	// Message IDs
+	tmp = bytes.Buffer{}
+	if err = binary.Write(&tmp, binary.BigEndian, M.Ids); err != nil {
+		return bytes.Buffer{}, err
+	}
+	surp = len(tmp.Bytes()) % 16
+	if surp != 0 {
+		remind := surp / 4
+		M.Ids = append(M.Ids, make([]uint32, remind)...)
+	}
+
+	/// Start to write structs into a byte array below
+
+	// Header
+	err = binary.Write(&buf, binary.BigEndian, H)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+	if delve.Enabled {
+		fmt.Println(buf.Bytes())
+	}
+
+	// Text Index Table
+	err = binary.Write(&buf, binary.BigEndian, I.Kind)
+	err = binary.Write(&buf, binary.BigEndian, I.Size)
+	err = binary.Write(&buf, binary.BigEndian, I.Entries)
+	err = binary.Write(&buf, binary.BigEndian, I.EntrySize)
+	err = binary.Write(&buf, binary.BigEndian, I.Group)
+	err = binary.Write(&buf, binary.BigEndian, I.DefColor)
+	err = binary.Write(&buf, binary.BigEndian, I.Reserved)
+	err = binary.Write(&buf, binary.BigEndian, I.MsgEntries)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+	if delve.Enabled {
+		fmt.Println(buf.Bytes())
+	}
+
+	// String Pool
+	err = binary.Write(&buf, binary.BigEndian, P.Magic)
+	err = binary.Write(&buf, binary.BigEndian, P.Size)
+	err = binary.Write(&buf, binary.BigEndian, P.Pool)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+	if delve.Enabled {
+		fmt.Println(buf.Bytes())
+	}
+
+	// Message IDs
+	err = binary.Write(&buf, binary.BigEndian, M.Kind)
+	err = binary.Write(&buf, binary.BigEndian, M.Size)
+	err = binary.Write(&buf, binary.BigEndian, M.Entries)
+	err = binary.Write(&buf, binary.BigEndian, M.Format)
+	err = binary.Write(&buf, binary.BigEndian, M.Info)
+	err = binary.Write(&buf, binary.BigEndian, M.Reserved)
+	err = binary.Write(&buf, binary.BigEndian, M.Ids)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+	if delve.Enabled {
+		fmt.Println(buf.Bytes())
+	}
+
+	return buf, nil
+}
+
+func lenText(p uint32, n uint32) uint32 {
+	if p > 0 {
+		CurrentOffset = p
+	}
+
+	if n > 0 {
+		NextOffset = n
+	}
+
+	return NextOffset - CurrentOffset
 }

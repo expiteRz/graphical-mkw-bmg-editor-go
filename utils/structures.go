@@ -57,7 +57,7 @@ type MsgEntry struct {
 type StringPool struct {
 	Magic [4]byte // DAT1 in ASCII
 	Size  uint32
-	Pool  []uint16
+	Pool  []uint16 // Decode strings with `unicode/utf16.Decode()`
 }
 
 type MsgId struct {
@@ -66,6 +66,6 @@ type MsgId struct {
 	Entries  uint16 // Number of messages
 	Format   uint8
 	Info     uint8
-	Reserved int32    // Usually 0
-	Ids      []uint32 // Decode strings with `unicode/utf16.Decode()`
+	Reserved int32 // Usually 0
+	Ids      []uint32
 }

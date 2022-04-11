@@ -5,13 +5,18 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	fDialog "fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"github.com/expiteRz/graphical-mkw-bmg-editor-go/utils"
 	"github.com/sqweek/dialog"
 	"log"
+	"os"
 )
 
-const appNameFormat = "Easy BMG Editor - %s"
+const (
+	appNameFormat = "Easy BMG Editor - %s"
+	Version       = "Alpha 1.0"
+)
 const (
 	SimpleEdit   = 0
 	AdvancedEdit = 1
@@ -54,8 +59,34 @@ func newMenu() *fyne.MainMenu {
 			Label: "File",
 			Items: []*fyne.MenuItem{
 				{
+					Label:  "New",
+					Action: utils.InitBmg,
+				},
+				{
 					Label:  "Open",
 					Action: openFile,
+				},
+				{
+					IsSeparator: true,
+				},
+				{
+					Label: "Save",
+					Action: func() {
+						fDialog.ShowInformation("Save", "Save function is not implemented yet.", w)
+					},
+				},
+				{
+					Label:  "Save as new",
+					Action: saveFile,
+				},
+			},
+		},
+		{
+			Label: "Help",
+			Items: []*fyne.MenuItem{
+				{
+					Label:  "About",
+					Action: showAbout,
 				},
 			},
 		},
@@ -95,6 +126,37 @@ func openFile() {
 
 	utils.S = utils.CharsetString[utils.H.Charset]
 	w.SetTitle(fmt.Sprintf(appNameFormat, utils.Filepath))
+}
+
+func saveFile() {
+	save, err := dialog.File().Filter("BMG File (*.bmg)", "bmg").Save()
+	if err != nil {
+		fDialog.ShowError(err, w)
+		return
+	}
+
+	bmg, err := utils.CombineBmg()
+	if err != nil {
+		log.Printf("Error: %v", err)
+		fDialog.ShowError(err, w)
+		return
+	}
+
+	file, err := os.Create(save)
+	if err != nil {
+		fDialog.ShowError(err, w)
+		return
+	}
+
+	_, err = file.Write(bmg.Bytes())
+	if err != nil {
+		fDialog.ShowError(err, w)
+		return
+	}
+}
+
+func showAbout() {
+	fDialog.NewInformation("About", fmt.Sprintf("Easy BMG Editor %s\n\nGUI designed with Fyne\nFile system by Custom Mario Kart Wiiki", Version), w).Show()
 }
 
 func editModeToggle() {
