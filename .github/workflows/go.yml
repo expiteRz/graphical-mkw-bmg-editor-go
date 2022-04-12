@@ -35,12 +35,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build
-        run: go build ./... -v
-
-  test:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: test
-        run: go test ./... -v
+        run: go build ./...
