@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	appNameFormat = "Easy BMG Editor - %s"
+	appNameFormat = "Easy BMG Editor %s - %s"
 	Version       = "Alpha 1.0"
 )
 const (
@@ -38,7 +38,7 @@ var editModeString = Simple
 func init() {
 	a = app.New()
 	a.Settings().SetTheme(&MKFTheme{})
-	w = a.NewWindow("Easy BMG Editor")
+	w = a.NewWindow(fmt.Sprintf("Easy BMG Editor %s", Version))
 	w.Resize(fyne.NewSize(appWidth, 530))
 }
 
@@ -113,11 +113,12 @@ func openFile() {
 	//    w.SetTitle(fmt.Sprintf(appNameFormat, utils.Filepath))
 	//}, w)
 
-	load, err := dialog.File().Filter("BMG file (.bmg)", "bmg").Load()
+	load, err := dialog.File().Filter("BMG file (.bmg)", "bmg").SetStartDir(utils.ReadFileDir()).Load()
 	if err != nil {
 		return
 	}
 	utils.Filepath = load
+	_ = utils.SetDirToRegistry(load)
 
 	if err = utils.ParseBmg(); err != nil {
 		log.Println("Failed to parse bmg")
@@ -125,13 +126,17 @@ func openFile() {
 	}
 
 	utils.S = utils.CharsetString[utils.H.Charset]
-	w.SetTitle(fmt.Sprintf(appNameFormat, utils.Filepath))
+	w.SetTitle(fmt.Sprintf(appNameFormat, Version, utils.Filepath))
 }
 
 func saveFile() {
-	save, err := dialog.File().Filter("BMG File (*.bmg)", "bmg").Save()
+	save, err := dialog.File().Filter("BMG File (*.bmg)", "bmg").SetStartDir(utils.ReadFileDir()).Save()
 	if err != nil {
 		fDialog.ShowError(err, w)
+		return
+	}
+
+	if err = utils.SetDirToRegistry(save); err != nil {
 		return
 	}
 
@@ -148,15 +153,14 @@ func saveFile() {
 		return
 	}
 
-	_, err = file.Write(bmg.Bytes())
-	if err != nil {
+	if _, err = file.Write(bmg.Bytes()); err != nil {
 		fDialog.ShowError(err, w)
 		return
 	}
 }
 
 func showAbout() {
-	fDialog.NewInformation("About", fmt.Sprintf("Easy BMG Editor %s\n\nGUI designed with Fyne\nFile system by Custom Mario Kart Wiiki", Version), w).Show()
+	fDialog.NewInformation("About", fmt.Sprintf("Easy BMG Editor %s\n\nGUI designed with Fyne\nDocumentation from Custom Mario Kart Wiiki", Version), w).Show()
 }
 
 func editModeToggle() {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/expiteRz/graphical-mkw-bmg-editor-go/delve"
 	"os"
+	"unicode/utf16"
 	"unsafe"
 )
 
@@ -24,6 +25,7 @@ var (
 	S             = CharsetString[H.Charset]
 	CurrentOffset uint32
 	NextOffset    uint32
+	RealPool      []string
 )
 
 func init() {
@@ -226,14 +228,18 @@ func CombineBmg() (bytes.Buffer, error) {
 	return buf, nil
 }
 
-func lenText(p uint32, n uint32) uint32 {
+func getMessage(p uint32, n uint32) string { // TODO: How to get next offset if it's end?
+	var length uint32
 	if p > 0 {
 		CurrentOffset = p
 	}
-
 	if n > 0 {
 		NextOffset = n
 	}
+	length = NextOffset - CurrentOffset
 
-	return NextOffset - CurrentOffset
+	test := P.Pool[CurrentOffset:length]
+	runes := utf16.Decode(test)
+
+	return string(runes)
 }

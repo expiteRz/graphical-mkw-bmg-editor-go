@@ -1,4 +1,4 @@
-// Structures are defined based on CT Wiiki (https://wiki.tockdom.com/wiki/BMG_(File_Format))
+// Structures are defined based on documentations from CT Wiiki (https://wiki.tockdom.com/wiki/BMG_(File_Format))
 
 package utils
 
