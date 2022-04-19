@@ -1,9 +1,10 @@
 //go:build windows
 
+// Use registry for the author's experiences
+
 package reg
 
 import (
-	"github.com/sqweek/dialog"
 	"golang.org/x/sys/windows/registry"
 	"os"
 	"path/filepath"
@@ -11,14 +12,9 @@ import (
 
 // ReadFileDir reads filepath for the app from registry
 func ReadFileDir() string {
-	exitFunc := func(err error) {
-		dialog.Message("%v\n\nPress OK to exit the application", err).Title("Fatal error").Info()
-		os.Exit(1)
-	}
-
 	key, existed, err := registry.CreateKey(registry.CURRENT_USER, `Software\Rz\KMP Editor`, registry.ALL_ACCESS)
 	if err != nil {
-		exitFunc(err)
+		errorDialog(err)
 	}
 
 	// If key is already existed
@@ -27,11 +23,11 @@ func ReadFileDir() string {
 		if err != nil {
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
-				exitFunc(err)
+				errorDialog(err)
 			}
 			err = key.SetStringValue("FilePath", homeDir)
 			if err != nil {
-				exitFunc(err)
+				errorDialog(err)
 			}
 			return homeDir
 		}
@@ -41,18 +37,18 @@ func ReadFileDir() string {
 	// If not
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		exitFunc(err)
+		errorDialog(err)
 	}
 	err = key.SetStringValue("FilePath", homeDir)
 	if err != nil {
-		exitFunc(err)
+		errorDialog(err)
 	}
 
 	return homeDir
 }
 
-// SetDirToRegistry save the filepath to registry
-func SetDirToRegistry(dir string) error {
+// SetFileDir save the filepath to registry
+func SetFileDir(dir string) error {
 	key, err := registry.OpenKey(registry.CURRENT_USER, `Software\Rz\KMP Editor`, registry.ALL_ACCESS)
 	if err != nil {
 		return err

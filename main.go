@@ -119,7 +119,7 @@ func openFile() {
 		return
 	}
 	utils.Filepath = load
-	_ = reg.SetDirToRegistry(load)
+	_ = reg.SetFileDir(load)
 
 	if err = utils.ParseBmg(); err != nil {
 		log.Println("Failed to parse bmg")
@@ -137,7 +137,7 @@ func saveFile() {
 		return
 	}
 
-	if err = reg.SetDirToRegistry(save); err != nil {
+	if err = reg.SetFileDir(save); err != nil {
 		return
 	}
 
