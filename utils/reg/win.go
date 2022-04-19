@@ -1,4 +1,6 @@
-package utils
+//go:build windows
+
+package reg
 
 import (
 	"github.com/sqweek/dialog"

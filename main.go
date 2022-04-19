@@ -8,6 +8,7 @@ import (
 	fDialog "fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"github.com/expiteRz/graphical-mkw-bmg-editor-go/utils"
+	"github.com/expiteRz/graphical-mkw-bmg-editor-go/utils/reg"
 	"github.com/sqweek/dialog"
 	"log"
 	"os"
@@ -113,12 +114,12 @@ func openFile() {
 	//    w.SetTitle(fmt.Sprintf(appNameFormat, utils.Filepath))
 	//}, w)
 
-	load, err := dialog.File().Filter("BMG file (.bmg)", "bmg").SetStartDir(utils.ReadFileDir()).Load()
+	load, err := dialog.File().Filter("BMG file (.bmg)", "bmg").SetStartDir(reg.ReadFileDir()).Load()
 	if err != nil {
 		return
 	}
 	utils.Filepath = load
-	_ = utils.SetDirToRegistry(load)
+	_ = reg.SetDirToRegistry(load)
 
 	if err = utils.ParseBmg(); err != nil {
 		log.Println("Failed to parse bmg")
@@ -130,13 +131,13 @@ func openFile() {
 }
 
 func saveFile() {
-	save, err := dialog.File().Filter("BMG File (*.bmg)", "bmg").SetStartDir(utils.ReadFileDir()).Save()
+	save, err := dialog.File().Filter("BMG File (*.bmg)", "bmg").SetStartDir(reg.ReadFileDir()).Save()
 	if err != nil {
 		fDialog.ShowError(err, w)
 		return
 	}
 
-	if err = utils.SetDirToRegistry(save); err != nil {
+	if err = reg.SetDirToRegistry(save); err != nil {
 		return
 	}
 
