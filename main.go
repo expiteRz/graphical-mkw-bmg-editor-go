@@ -128,6 +128,7 @@ func openFile() {
 
 	utils.S = utils.CharsetString[utils.H.Charset]
 	w.SetTitle(fmt.Sprintf(appNameFormat, Version, utils.Filepath))
+	msgListLayout.Refresh()
 }
 
 func saveFile() {
@@ -161,7 +162,7 @@ func saveFile() {
 }
 
 func showAbout() {
-	fDialog.NewInformation("About", fmt.Sprintf("Easy BMG Editor %s\n\nGUI designed with Fyne\nDocumentation from Custom Mario Kart Wiiki", Version), w).Show()
+	fDialog.NewInformation("About", fmt.Sprintf("Easy BMG Editor %s\n\nGUI designed with Fyne\nDocumentation from Custom Mario Kart Wiiki\nAny knowledges from Wiimms SZS Tools by Wiimm\n and CTools by Chadderz", Version), w).Show()
 }
 
 func editModeToggle() {

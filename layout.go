@@ -9,16 +9,15 @@ import (
 	"strconv"
 )
 
-var label = widget.NewLabel(fmt.Sprintf("Charset: %s", utils.S))
-var msgListLayout = msgElementAdvanced()
+var msgListLayout = msgElementSimple()
 
 func msgElementAdvanced() *widget.List {
-	list := widget.NewList(
+	return widget.NewList(
 		func() int {
 			return len(utils.I.MsgEntries)
 		},
 		func() fyne.CanvasObject {
-			msgIdWidget, msgWidget := widget.NewLabel(""), widget.NewEntry()
+			msgIdWidget, msgWidget := widget.NewLabel("ID"), widget.NewEntry()
 			msgEscapeWidget := widget.NewSelect([]string{"None", "Test1", "Test2"}, func(s string) {})
 			msgFontWidget := widget.NewSelect([]string{"Countdown/Finish strings", "Standard", "Red font", "Blue font"}, func(s string) {})
 			msgWidget.SetPlaceHolder("Message")
@@ -40,25 +39,26 @@ func msgElementAdvanced() *widget.List {
 			l2.Objects[0].(*widget.Entry).SetText(strconv.Itoa(int(utils.I.MsgEntries[id].FontType)))
 		},
 	)
-
-	return list
 }
 
 func msgElementSimple() *widget.List {
-	return widget.NewList(func() int {
-		return len(utils.I.MsgEntries)
-	}, func() fyne.CanvasObject {
-		msgIdWidget, msgWidget := widget.NewLabel(""), widget.NewEntry()
-		msgWidget.SetPlaceHolder("Message")
-		msgIdLayout, msgLayout :=
-			container.NewGridWrap(fyne.NewSize(90, 38), msgIdWidget),
-			container.NewGridWrap(fyne.NewSize(appWidth-100, 38), msgWidget)
+	return widget.NewList(
+		func() int {
+			return len(utils.I.MsgEntries)
+		},
+		func() fyne.CanvasObject {
+			msgIdWidget, msgWidget := widget.NewLabel("ID"), widget.NewEntry()
+			msgWidget.SetPlaceHolder("Message")
+			msgIdLayout, msgLayout :=
+				container.NewGridWrap(fyne.NewSize(90, 38), msgIdWidget),
+				container.NewGridWrap(fyne.NewSize(appWidth-100, 38), msgWidget)
 
-		return container.NewHBox(msgIdLayout, msgLayout)
-	}, func(id widget.ListItemID, object fyne.CanvasObject) {
-		m := object.(*fyne.Container)
-		l1, l2 := m.Objects[0].(*fyne.Container), m.Objects[1].(*fyne.Container)
-		l1.Objects[0].(*widget.Label).SetText(fmt.Sprintf("%x", utils.I.MsgEntries[id].Offset))
-		l2.Objects[0].(*widget.Entry).SetText(strconv.Itoa(int(utils.I.MsgEntries[id].FontType)))
-	})
+			return container.NewHBox(msgIdLayout, msgLayout)
+		},
+		func(id widget.ListItemID, object fyne.CanvasObject) {
+			m := object.(*fyne.Container)
+			l1, l2 := m.Objects[0].(*fyne.Container), m.Objects[1].(*fyne.Container)
+			l1.Objects[0].(*widget.Label).SetText(fmt.Sprintf("%x", utils.I.MsgEntries[id].Offset))
+			l2.Objects[0].(*widget.Entry).SetText(strconv.Itoa(int(utils.I.MsgEntries[id].FontType)))
+		})
 }

@@ -25,7 +25,7 @@ var (
 	S             = CharsetString[H.Charset]
 	CurrentOffset uint32
 	NextOffset    uint32
-	RealPool      []string
+	DecodedPool   []string
 )
 
 func init() {
@@ -228,18 +228,27 @@ func CombineBmg() (bytes.Buffer, error) {
 	return buf, nil
 }
 
+// getMessage tries to get texts from string pool bytes between the defined address and the address in INF1
 func getMessage(p uint32, n uint32) string { // TODO: How to get next offset if it's end?
-	var length uint32
-	if p > 0 {
+	//* Technically the string is null then no assignment *//
+	if p <= 0 {
 		CurrentOffset = p
 	}
-	if n > 0 {
+
+	if n <= 0 {
 		NextOffset = n
 	}
-	length = NextOffset - CurrentOffset
+	//* Until here *//
 
-	test := P.Pool[CurrentOffset:length]
-	runes := utf16.Decode(test)
+	if CurrentOffset == NextOffset { // This parsing is obviously meaningless. We can replace here condition with simply returning an empty string
+		textBytes := P.Pool[0:2]
+		DecodedPool := utf16.Decode(textBytes)
 
-	return string(runes)
+		return string(DecodedPool)
+	}
+
+	textBytes := P.Pool[CurrentOffset:NextOffset] // Get bytes
+	decodedBytes := utf16.Decode(textBytes)       // Decode bytes to string
+
+	return string(decodedBytes)
 }
