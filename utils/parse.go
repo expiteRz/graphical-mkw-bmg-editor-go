@@ -231,11 +231,11 @@ func CombineBmg() (bytes.Buffer, error) {
 // getMessage tries to get texts from string pool bytes between the defined address and the address in INF1
 func getMessage(p uint32, n uint32) string { // TODO: How to get next offset if it's end?
 	//* Technically the string is null then no assignment *//
-	if p <= 0 {
+	if p > 0 {
 		CurrentOffset = p
 	}
 
-	if n <= 0 {
+	if n > 0 {
 		NextOffset = n
 	}
 	//* Until here *//
