@@ -33,7 +33,7 @@ func ReadFileDir() string {
 
 // SetFileDir save the filepath to environment variables
 func SetFileDir(dir string) error {
-	dirc, file := filepath.Split(dir)
+	dirc, _ := filepath.Split(dir)
 	if err := os.Setenv(envName, dirc); err != nil {
 		return err
 	}
