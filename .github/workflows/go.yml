@@ -1,10 +1,7 @@
 name: Go
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  [push, pull_request]
 
 jobs:
 
@@ -20,11 +17,9 @@ jobs:
         
     - name: Install dependencies
       run: |
-        sudo apt-get update && sudo apt-get install gcc libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev
-        locate pkgconfig/gl.pc
-        /usr/lib/x86_64-linux-gnu/pkgconfig/gl.pc
-        export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
-        
+        sudo apt update
+        sudo apt install build-essential libgl1-mesa-dev xorg-dev
+
     - name: checkout
       uses: actions/checkout@v3
       
