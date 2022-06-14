@@ -37,4 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build
-        run: go build ./...
+        run: |
+          go mod tidy
+          go build ./...
